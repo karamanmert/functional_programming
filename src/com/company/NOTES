@@ -1,0 +1,169 @@
+structured, functional, ex -> SIRALAMA
+
+structured way'de nasıl loop'a sokarım diye düşünmemiz gerekirken
+functional way'de nasıl yaparızı düşüneceğiz.
+örn elimizde bir list var. [12,1,3,4..]
+bunu stream haline getirmemiz lazım sequence..
+12
+1
+3 gibi tek tek ele almamız lazım.
+
+
+map -> bir değeri başka bir değere dönüştürmek için kullanılır.
+ör: listeden sayıları al ve 2 katlarını bastır dediğimiz zaman
+numbers.stream().map(x -> x*2).forEach(..)
+ör:
+.mapToInt(course -> course.getNoOfStudents()) -> course tipi bir class. diyoruz ki class olan ifadeyi getNoOfStudents tipine çevir o da İNT.
+
+
+
+reduce -> örn: bir toplamı döneceğimiz zaman falan. combine them into one result!
+ör: liste içerisinde sayılar var bunların toplamını dön
+numbers.stream.reduce(0,FONK) -> 0 başlangıç değeri.
+x y değerleri olsun. x yerine 0 y yerine liste 0. index gider -> 1. iterasyon
+x yerine x+y, yerine liste 1.index  gelir -> 2. iterasyon..
+
+
+
+distinct() ->farklı
+
+sorted() -> sıralı
+sorted(Comparator.naturalOrder())  sorted e parametre koymazsak otomatik böyle gleir. reverseOrder falan diye dğeiştirebiliriz.
+
+
+.collect(Collectors.toList()); // collect all the results into a list
+
+functional interface..
+
+-> fp03
+//we are passing the logic of the method as an argument of the method
+//we are passing the behavior of the method as an argument
+//This is called behavior parameterization
+
+
+--- INTERFACELER ---
+!!
+*Predicate -> For boolean conditions || input ve outputu var. outputu boolean ex: Predicate<Integer> isEvenPredicate = x -> x % 2 == 0;
+*Function -> Input ve outputu var. ex: Function<Integer, Integer> squareFunction = x -> x * x;
+*Consumer -> Inputu var ama outputu yok. //you get an input and you'd want to process it and there is no output ex: Consumer<Integer> sysoutConsumer = x -> System.out.println(x);
+*BinaryOperator-> you get two inputs and output. inputs and output are the same type. ex:BinaryOperator<Integer> sumBinaryOperator = (x, y) -> x + y;
+*Supplier ->No input -> return something back ex:factory pattern
+ex:
+Supplier<Integer> randomIntegerSupplier = () -> {
+			Random random = new Random();
+			return random.nextInt(50);
+		};
+System.out.println("randomIntegerSupplier = " + randomIntegerSupplier.get());
+
+*UnaryOperator->one input. has output. same type
+ex:
+UnaryOperator<Integer> unaryOperator = (x) -> 3 * x;
+   		System.out.println("unaryOperator.apply(10) = " + unaryOperator.apply(10));
+
+*BiPredicate-> two inputs, output will be boolean
+ex:
+BiPredicate<Integer,String> biPredicate = (number,string)->{
+			return number<10 && string.length()>4;
+		};
+		System.out.println(biPredicate.test(4,"karaman"));
+
+*BiConsumer-> two inputs, no output
+ex:
+BiConsumer<String, String> biConsumer = (s1,s2)->{
+			System.out.println(s1);
+			System.out.println(s2);
+		};
+
+
+!!! PRIMITE TYPELAR İÇİN DE INTERFACELER VAR. DAHA EFFICIENT CODE YAZMAK ICIN ONLARI KULLAN.
+EX: IntBinaryOperator
+----
+
+METHOD REFERENCE!
+---
+allMatch, anyMatch, noneMatch !!
+.sorted(
+						Comparator.comparingInt(Course::getNoOfStudents) //önce numaraya göre sırala
+								.thenComparingInt(Course::getReviewScore) //sonra isime göre sırala
+								.reversed() //Önce yüksekleri görmek için
+				)
+compare -> birbiri ile kıyaslama yaparken mümkün mertebe PRIMITIVE kullanmaya çalış. EFFICIENCY!
+
+limit..-> limiting result
+
+takeWhile -> predicate döner yani true false döner. -> CONDITION DOĞRU OLANA KADAR OLAN VERİLERİ SAKLAMAK İÇİN. YANI FALSE OLDUGU AN DURUR
+örn: course numarları var. diyeceksin ki numarası >=95 olanları alayım
+	courses.stream()
+				.takeWhile(course -> course.getReviewScore() >= 95) sıradan bakar. cond false olana kadar
+				.collect(Collectors.toList()) //95 den buyuk x tane course varsa bunları listeler.
+				.forEach(System.out::println);
+
+dropWhile -> takeWhile'ın tersi.. verdiğin condition'ın doğru olduğu yerleri almaz. sonra gelecek verileri alır.
+	courses.stream()
+				.dropWhile(course -> course.getReviewScore() >= 95)
+				.collect(Collectors.toList())
+				.forEach(System.out::println);
+
+max ve min fonksiyonları OPTIONAL döner.
+Optional -> null veri yakaladıgımızda exception yememizi engeller.
+it is for handling nulls.
+checks the result exists or null.
+
+orElse -> yoksa bunu yap dediğimiz ifade.
+
+
+.findFirst();  // findFirst optional döner. ilk elemanı döner
+
+findAny // optional. herhangi bir elemanı döner
+
+sum -> streamdaki toplamı gönder
+
+average -> streamdaki ortalamayı döner ama OPTIONAL.
+
+count -> streamdaki eleman sayısını döner.
+
+groupingBy -> aynı özellikleri olan değerleri o özellik çatısı altında grouplamak.
+Map<String, List<Course>> collect = courses.stream()
+				.collect(Collectors.groupingBy(Course::getCategory));
+burada categorye göre sıraladık. Key string, value ise list of courses oldu.
+{Cloud=[name='AWS', reviewScore=92, noOfStudents=21000, name='Azure', reviewScore=99, noOfStudents=21000, name='Docker', reviewScore=92, noOfStudents=20000, name='Kubernetes', reviewScore=91, noOfStudents=20000], FullStack=[name='FullStack', reviewScore=91, noOfStudents=14000], Microservices=[name='API', reviewScore=97, noOfStudents=22000, name='Microservices', reviewScore=96, noOfStudents=25000], Framework=[name='Spring', reviewScore=98, noOfStudents=20000, name='Spring Boot', reviewScore=95, noOfStudents=18000]}
+
+counting->countTheGroupsWhichAreGroupedByCategories
+//{Cloud=4, FullStack=1, Microservices=2, Framework=2}
+
+
+joining -> used for separed items.
+courses.stream().collect(Collectors.joining("--"));
+Spring--Spring Boot--API--Microservices--AWS--PCF--Azure--Docker--Kubernates
+
+
+flatMap...
+
+PERFORMANCE !!!!!!!!!!!!
+günümüzde multiprocessorlerin artması ile functional programming de çok kullanılmaya başlandı
+NEDEN -> "PERFORMANCE"
+ör: course listesinde 11 den uzun ders adlarından 1.sini almak istiyoruz diyelim. bu örnekte findFirst ile ilk elemanı bulur bulmaz kalanına bakmaz.
+courses.stream()
+				.filter(course -> course.length() > 11)
+				.map(course -> course.toUpperCase())
+				.findFirst();
+
+peek()->> sout gibi bir şey arada değerleri console yazıyor.
+fp05
+All the intermediate operations in java are LAZY. (  map, peek, filter..)
+They are only executed when i execute the terminal operation( findFirst) -> performance
+
+/*
+Java split the stream into multiple parts and execute these operations on those
+multiple parts and combine the result of all those multiple parts.
+ */
+
+
+replaceAll
+removeIf
+
+range-> (0,10) 10 dahil değil
+rangeClose(0,10) 10 dahil
+
+boxed ..
+
